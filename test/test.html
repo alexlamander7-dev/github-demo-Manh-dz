@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Page</title>
+<style>
+div{
+     background-color: #2563eb;
+}
+div ul{
+    display:flex;
+    justify-content: center;
+    align-items: center;
+    list-style: none;
+}
+div ul li{
+    padding: 12px 20px;
+    color:white;
+    cursor: pointer;
+}
+div ul li:hover{
+    background-color: #1d4ed8;
+}
+    .container {
+        background-color: #1b95e6;
+        padding: 20px;
+        border-radius: 10px;
+        width: 60%;
+        height: auto;
+    }
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+    }
+    .form-group label {
+        font-size: 18px;
+        font-weight: bold;
+        display:inline-block;
+        width: 150px;   
+    }
+
+</style>
+</head>
+
+<body>
+
+    <div>
+        <ul>
+            <li>Item 1</li>
+            <li>Item 2</li>
+            <li>Item 3</li>
+            <li>Item 4</li>
+            <li>Item 5</li>
+        </ul>
+    </div>
+<main class="container">
+    <h1>form đăng ký</h1>
+    <nav class="form-group">
+    <form >
+        <label for="name">Họ và tên:</label>
+        <input type="text" id="name" name="name" required><br><br>
+        
+        <label for="email">Email:</label>
+        <input type="email" id="email"name="email" required><br><br>
+
+        <label for="password">Mật khẩu:</label>
+        <input type="password" id="password" name="password" required><br><br>
+        <button type="submit">Đăng ký</button>
+
+    </form>
+    </nav>
+</main>
+</body>
+
+</html>
