@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hệ thống quản lý sinh viên</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script>tailwind.config={theme:{extend:{fontFamily:{sans:['Inter','system-ui','sans-serif']}}}}</script>
+<script>
+const P={home:'M3 11l9-8 9 8v10a1 1 0 01-1 1h-5v-7H9v7H4a1 1 0 01-1-1z',users:'M17 20v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2M10 10a4 4 0 100-8 4 4 0 000 8zM21 20v-2a4 4 0 00-3-3.9M16 2.1a4 4 0 010 7.8',book:'M4 19.5A2.5 2.5 0 016.5 17H20V3H6.5A2.5 2.5 0 004 5.5zM20 17v4H6.5A2.5 2.5 0 014 18.5',check:'M9 11l3 3 8-8M20 12v7a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2h9',chart:'M3 3v18h18M7 14l4-4 3 3 5-6',cog:'M12 15a3 3 0 100-6 3 3 0 000 6zM19 12a7 7 0 00-.1-1.3l2-1.5-2-3.4-2.3.9a7 7 0 00-2.2-1.3L14 3h-4l-.4 2.4a7 7 0 00-2.2 1.3l-2.3-.9-2 3.4 2 1.5a7 7 0 000 2.6l-2 1.5 2 3.4 2.3-.9a7 7 0 002.2 1.3L10 21h4l.4-2.4a7 7 0 002.2-1.3l2.3.9 2-3.4-2-1.5c.1-.4.1-.9.1-1.3z',search:'M11 19a8 8 0 100-16 8 8 0 000 16zM21 21l-4.3-4.3',bell:'M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0',plus:'M12 5v14M5 12h14',eye:'M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12zM12 15a3 3 0 100-6 3 3 0 000 6z',pen:'M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z',trash:'M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6',x:'M18 6L6 18M6 6l12 12',menu:'M3 6h18M3 12h18M3 18h18',up:'M7 17L17 7M8 7h9v9',down:'M7 7l10 10M17 8v9H8',cap:'M22 10L12 5 2 10l10 5zM6 12v5c3 2 9 2 12 0v-5',clock:'M12 21a9 9 0 100-18 9 9 0 000 18zM12 7v5l3 2',star:'M12 2l3 7 7 .6-5.3 4.7 1.6 7.2L12 17.8 5.7 21.5l1.6-7.2L2 9.6 9 9z',out:'M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9'};
+const ic=(n,c='w-5 h-5')=>`<svg class="${c}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${P[n]}"/></svg>`;
+const MAJORS=['Công nghệ thông tin','Quản trị kinh doanh','Điện - Điện tử','Y khoa','Thiết kế đồ họa','Kinh tế'];
+const NAMES=['Nguyễn Minh Anh','Trần Quốc Bảo','Lê Thu Hà','Phạm Gia Huy','Hoàng Ngọc Lan','Võ Thanh Tùng','Đặng Khánh Linh','Bùi Đức Anh','Ngô Phương Thảo','Dương Hải Đăng','Lý Mỹ Duyên','Phan Thành Long','Đỗ Bảo Châu','Vũ Tuấn Kiệt','Huỳnh Kim Ngân','Trịnh Anh Khoa','Mai Thùy Dương','Lương Văn Hậu','Tạ Hồng Nhung','Châu Minh Triết','Đinh Yến Nhi','Cao Nhật Nam','Hồ Diệu Linh','Kiều Trọng Nghĩa'];
+const slug=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').toLowerCase().split(' ');
+const STU=NAMES.map((n,i)=>{const w=slug(n);return{id:'SV2024'+String(i+1).padStart(3,'0'),name:n,email:w[w.length-1]+'.'+w[0]+(i+1)+'@edu.vn',major:MAJORS[i%6],gpa:+(2.2+((i*37)%18)/10).toFixed(2),status:i%9==8?'Graduated':i%5==4?'Inactive':'Active',att:['P','P','L','P','A'][i%5],score:60+(i*7)%40}});
+const COLORS=['bg-indigo-100 text-indigo-700','bg-emerald-100 text-emerald-700','bg-rose-100 text-rose-700','bg-amber-100 text-amber-700','bg-sky-100 text-sky-700','bg-violet-100 text-violet-700'];
+function app(){return{
+ page:'dashboard',side:false,notif:false,prof:false,q:'',fm:'',fs:'',pg:1,per:8,students:STU,modal:false,view:null,del:null,edit:null,err:{},toasts:[],
+ form:{id:'',name:'',email:'',major:MAJORS[0],gpa:'',status:'Active'},majors:MAJORS,
+ nav:[['dashboard','home','Tổng quan'],['students','users','Danh sách sinh viên'],['courses','book','Lớp học & môn học'],['attendance','check','Điểm số & điểm danh'],['reports','chart','Báo cáo thống kê'],['settings','cog','Cài đặt hệ thống']],
+ courses:[['CS101','Lập trình căn bản','TS. Lê Văn Minh',42,88],['BA204','Marketing số','ThS. Phạm Thu Trang',36,74],['EE310','Mạch điện tử','TS. Nguyễn Hoàng Sơn',28,61],['MD150','Giải phẫu học','PGS. Trần Mai Lan',55,93],['GD220','Thiết kế thương hiệu','ThS. Võ Anh Tuấn',31,47],['EC301','Kinh tế vi mô','TS. Đặng Quốc Việt',48,69]],
+ months:[['T5',62],['T6',70],['T7',58],['T8',81],['T9',92],['T10',100]],
+ settings:{email:true,dark:false,auto:true,school:'Đại học Công nghệ Tuy Hòa'},
+ ic,
+ init(){this.$watch('q',()=>this.pg=1);this.$watch('fm',()=>this.pg=1);this.$watch('fs',()=>this.pg=1)},
+ get title(){return this.nav.find(n=>n[0]==this.page)[2]},
+ get list(){const q=this.q.toLowerCase();return this.students.filter(s=>(!q||(s.name+s.id+s.email).toLowerCase().includes(q))&&(!this.fm||s.major==this.fm)&&(!this.fs||s.status==this.fs))},
+ get pages(){return Math.max(1,Math.ceil(this.list.length/this.per))},
+ get rows(){return this.list.slice((this.pg-1)*this.per,this.pg*this.per)},
+ get avg(){return (this.students.reduce((a,s)=>a+s.gpa,0)/this.students.length).toFixed(2)},
+ get stats(){return[['Tổng sinh viên',this.students.length,'+4.2%',1,'users','indigo'],['Lớp đang mở',this.courses.length,'+2',1,'book','sky'],['GPA trung bình',this.avg,'+0.08',1,'star','amber'],['Tỷ lệ chuyên cần','92.4%','-1.3%',0,'clock','emerald']]},
+ get byMajor(){return MAJORS.map(m=>[m,this.students.filter(s=>s.major==m).length])},
+ get bands(){const g=this.students.map(s=>s.gpa);return[['Xuất sắc ≥ 3.6',g.filter(x=>x>=3.6).length],['Giỏi 3.2–3.59',g.filter(x=>x>=3.2&&x<3.6).length],['Khá 2.5–3.19',g.filter(x=>x>=2.5&&x<3.2).length],['Trung bình < 2.5',g.filter(x=>x<2.5).length]]},
+ get attRows(){return this.students.filter(s=>s.status=='Active').slice(0,10)},
+ col(s){return COLORS[s.name.length%6]},
+ ini(n){const w=n.split(' ');return w[0][0]+w[w.length-1][0]},
+ badge(s){return{Active:'bg-emerald-50 text-emerald-700 ring-emerald-600/20',Inactive:'bg-slate-100 text-slate-600 ring-slate-500/20',Graduated:'bg-indigo-50 text-indigo-700 ring-indigo-600/20'}[s]},
+ vn(s){return{Active:'Đang học',Inactive:'Tạm nghỉ',Graduated:'Đã tốt nghiệp'}[s]},
+ toast(m,t='ok'){const id=Date.now()+Math.random();this.toasts.push({id,m,t});setTimeout(()=>this.toasts=this.toasts.filter(x=>x.id!=id),3200)},
+ openAdd(){this.edit=null;this.err={};const n=this.students.length+1;this.form={id:'SV2024'+String(n).padStart(3,'0'),name:'',email:'',major:MAJORS[0],gpa:'',status:'Active'};this.modal=true},
+ openEdit(s){this.edit=s.id;this.err={};this.form={...s};this.modal=true},
+ save(){const f=this.form,e={};
+  if(f.name.trim().length<3)e.name='Nhập họ tên đầy đủ (ít nhất 3 ký tự).';
+  if(!/^\S+@\S+\.\S+$/.test(f.email))e.email='Email chưa đúng định dạng, ví dụ ten@edu.vn.';
+  if(!f.id.trim())e.id='Mã sinh viên không được để trống.';
+  else if(this.students.some(s=>s.id==f.id&&s.id!=this.edit))e.id='Mã sinh viên này đã tồn tại.';
+  const g=parseFloat(f.gpa);if(isNaN(g)||g<0||g>4)e.gpa='GPA phải nằm trong khoảng 0 – 4.0.';
+  this.err=e;if(Object.keys(e).length)return;
+  const r={...f,gpa:g,att:'P',score:70};
+  if(this.edit){const i=this.students.findIndex(s=>s.id==this.edit);this.students[i]={...this.students[i],...r};this.toast('Đã cập nhật '+r.name)}
+  else{this.students.unshift(r);this.pg=1;this.toast('Đã thêm sinh viên '+r.name)}
+  this.modal=false},
+ remove(){this.students=this.students.filter(s=>s.id!=this.del.id);this.toast('Đã xóa '+this.del.name,'del');this.del=null;if(this.pg>this.pages)this.pg=this.pages},
+ cyc(s){s.att={P:'L',L:'A',A:'P'}[s.att]},
+ attL(a){return{P:['Có mặt','bg-emerald-50 text-emerald-700'],L:['Đi muộn','bg-amber-50 text-amber-700'],A:['Vắng','bg-rose-50 text-rose-700']}[a]},
+ go(p){this.page=p;this.side=false;window.scrollTo(0,0)}
+}}
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px);color-scheme:light}
+body{background:#F8FAFC;color:#0f172a;font-family:Inter,system-ui,sans-serif}
+[x-cloak]{display:none!important}
+.inp{width:100%;border:1px solid #e2e8f0;border-radius:.75rem;padding:.6rem .85rem;font-size:.875rem;background:#fff;outline:none;transition:.15s}
+.inp:focus{border-color:#4F46E5;box-shadow:0 0 0 3px #4F46E522}
+.inp.bad{border-color:#F43F5E;background:#fff1f2}
+.btn{display:inline-flex;align-items:center;gap:.5rem;border-radius:.75rem;padding:.55rem 1rem;font-size:.875rem;font-weight:600;transition:.15s}
+.card{background:#fff;border:1px solid #e2e8f0;border-radius:1rem;box-shadow:0 1px 2px #0f172a0a}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body x-data="app()" x-cloak>
+<!-- Sidebar -->
+<div x-show="side" x-transition.opacity class="fixed inset-0 bg-slate-900/40 z-30 lg:hidden" @click="side=false"></div>
+<aside class="fixed inset-y-0 left-0 w-64 bg-white border-r border-slate-200 z-40 transition-transform lg:translate-x-0" :class="side?'translate-x-0':'-translate-x-full'">
+ <div class="h-16 flex items-center gap-3 px-5 border-b border-slate-100">
+  <div class="w-9 h-9 rounded-xl bg-[#4F46E5] text-white grid place-items-center" x-html="ic('cap')"></div>
+  <div><div class="font-bold leading-tight">EduManage</div><div class="text-xs text-slate-500">Cổng quản trị</div></div>
+ </div>
+ <nav class="p-3 space-y-1">
+  <template x-for="n in nav" :key="n[0]">
+   <button @click="go(n[0])" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition" :class="page==n[0]?'bg-indigo-50 text-[#4F46E5]':'text-slate-600 hover:bg-slate-50 hover:text-slate-900'">
+    <span x-html="ic(n[1])"></span><span x-text="n[2]"></span>
+   </button>
+  </template>
+ </nav>
+ <div class="absolute bottom-4 inset-x-4 card p-4 bg-slate-50">
+  <div class="text-sm font-semibold">Học kỳ 1 · 2026–2027</div>
+  <div class="text-xs text-slate-500 mt-1">Còn 6 tuần đến kỳ thi giữa kỳ</div>
+  <div class="h-1.5 bg-slate-200 rounded-full mt-3"><div class="h-1.5 bg-[#4F46E5] rounded-full w-2/5"></div></div>
+ </div>
+</aside>
+
+<div class="lg:pl-64 min-h-screen">
+ <!-- Topbar -->
+ <header class="sticky top-0 z-20 h-16 bg-white/80 backdrop-blur border-b border-slate-200 flex items-center gap-3 px-4 sm:px-6" style="top:env(safe-area-inset-top,0px)">
+  <button class="lg:hidden p-2 rounded-lg hover:bg-slate-100" @click="side=true" aria-label="Mở menu" x-html="ic('menu')"></button>
+  <div class="relative flex-1 max-w-md">
+   <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" x-html="ic('search','w-4 h-4')"></span>
+   <input class="inp pl-9" placeholder="Tìm sinh viên theo tên, mã, email…" x-model="q" @input="page='students'">
+  </div>
+  <div class="ml-auto flex items-center gap-2">
+   <div class="relative" @click.outside="notif=false">
+    <button class="relative p-2 rounded-lg hover:bg-slate-100 text-slate-600" @click="notif=!notif;prof=false" aria-label="Thông báo"><span x-html="ic('bell')"></span><span class="absolute top-1 right-1 min-w-4 h-4 px-1 rounded-full bg-[#F43F5E] text-white text-[10px] font-bold grid place-items-center">3</span></button>
+    <div x-show="notif" x-transition class="absolute right-0 mt-2 w-72 card p-2 text-sm">
+     <div class="px-3 py-2 font-semibold">Thông báo</div>
+     <div class="px-3 py-2 rounded-lg hover:bg-slate-50">3 sinh viên vắng quá 20% buổi học</div>
+     <div class="px-3 py-2 rounded-lg hover:bg-slate-50">Lớp GD220 chưa nhập điểm giữa kỳ</div>
+     <div class="px-3 py-2 rounded-lg hover:bg-slate-50">Báo cáo tháng 10 đã sẵn sàng</div>
+    </div>
+   </div>
+   <div class="relative" @click.outside="prof=false">
+    <button class="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-xl hover:bg-slate-100" @click="prof=!prof;notif=false">
+     <span class="w-8 h-8 rounded-full bg-[#4F46E5] text-white text-xs font-bold grid place-items-center">QT</span>
+     <span class="hidden sm:block text-left leading-tight"><span class="block text-sm font-semibold">Quản trị viên</span><span class="block text-xs text-slate-500">Phòng đào tạo</span></span>
+    </button>
+    <div x-show="prof" x-transition class="absolute right-0 mt-2 w-52 card p-1.5 text-sm">
+     <button class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-50" @click="go('settings');prof=false">Cài đặt tài khoản</button>
+     <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-rose-50 text-[#F43F5E]" @click="prof=false;toast('Đã đăng xuất')"><span x-html="ic('out','w-4 h-4')"></span>Đăng xuất</button>
+    </div>
+   </div>
+  </div>
+ </header>
+
+ <main class="p-4 sm:p-6 max-w-7xl mx-auto">
+  <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+   <h1 class="text-2xl font-bold tracking-tight" x-text="title"></h1>
+   <button x-show="page=='students'" class="btn bg-[#4F46E5] text-white hover:bg-indigo-700 shadow-sm" @click="openAdd()"><span x-html="ic('plus','w-4 h-4')"></span>Thêm sinh viên</button>
+  </div>
+
+  <!-- Dashboard -->
+  <section x-show="page=='dashboard'" class="space-y-6">
+   <div class="grid sm:grid-cols-2 xl:grid-cols-4 gap-4">
+    <template x-for="s in stats" :key="s[0]">
+     <div class="card p-5 hover:shadow-md transition">
+      <div class="flex items-start justify-between">
+       <div><div class="text-sm text-slate-500" x-text="s[0]"></div><div class="text-3xl font-bold mt-1" x-text="s[1]"></div></div>
+       <div class="w-11 h-11 rounded-xl grid place-items-center" :class="{indigo:'bg-indigo-50 text-indigo-600',sky:'bg-sky-50 text-sky-600',amber:'bg-amber-50 text-amber-600',emerald:'bg-emerald-50 text-emerald-600'}[s[5]]" x-html="ic(s[4])"></div>
+      </div>
+      <div class="mt-3 flex items-center gap-1 text-sm font-medium" :class="s[3]?'text-emerald-600':'text-[#F43F5E]'"><span x-html="ic(s[3]?'up':'down','w-4 h-4')"></span><span x-text="s[2]"></span><span class="text-slate-400 font-normal ml-1">so với kỳ trước</span></div>
+     </div>
+    </template>
+   </div>
+   <div class="grid lg:grid-cols-3 gap-4">
+    <div class="card p-5 lg:col-span-2">
+     <div class="font-semibold">Sinh viên nhập học theo tháng</div>
+     <div class="text-sm text-slate-500 mb-4">Số hồ sơ được duyệt, 6 tháng gần nhất</div>
+     <div class="flex items-end gap-3 h-52">
+      <template x-for="m in months" :key="m[0]">
+       <div class="flex-1 flex flex-col items-center justify-end gap-2 h-full">
+        <span class="text-xs font-medium text-slate-500" x-text="m[1]*3"></span>
+        <div class="w-full rounded-t-lg bg-indigo-200 hover:bg-[#4F46E5] transition" :style="'height:'+m[1]*0.75+'%'"></div>
+        <span class="text-xs text-slate-500" x-text="m[0]"></span>
+       </div>
+      </template>
+     </div>
+    </div>
+    <div class="card p-5">
+     <div class="font-semibold mb-4">Sinh viên theo ngành</div>
+     <div class="space-y-3">
+      <template x-for="m in byMajor" :key="m[0]">
+       <div><div class="flex justify-between text-sm mb-1"><span x-text="m[0]"></span><span class="font-semibold" x-text="m[1]"></span></div>
+       <div class="h-2 bg-slate-100 rounded-full"><div class="h-2 bg-[#4F46E5] rounded-full transition-all" :style="'width:'+m[1]/students.length*100*3+'%'"></div></div></div>
+      </template>
+     </div>
+    </div>
+   </div>
+  </section>
+
+  <!-- Students -->
+  <section x-show="page=='students'" class="card">
+   <div class="p-4 flex flex-wrap gap-3 border-b border-slate-100">
+    <input class="inp sm:max-w-xs" placeholder="Tìm kiếm…" x-model="q">
+    <select class="inp sm:w-auto" x-model="fm"><option value="">Tất cả ngành</option><template x-for="m in majors"><option :value="m" x-text="m"></option></template></select>
+    <select class="inp sm:w-auto" x-model="fs"><option value="">Mọi trạng thái</option><option value="Active">Đang học</option><option value="Inactive">Tạm nghỉ</option><option value="Graduated">Đã tốt nghiệp</option></select>
+    <div class="ml-auto self-center text-sm text-slate-500"><span x-text="list.length"></span> kết quả</div>
+   </div>
+   <div class="overflow-x-auto">
+    <table class="w-full text-sm min-w-[860px]">
+     <thead class="bg-slate-50 text-slate-500 text-left"><tr>
+      <th class="px-4 py-3 font-medium">Sinh viên</th><th class="px-4 py-3 font-medium">Mã SV</th><th class="px-4 py-3 font-medium">Email</th><th class="px-4 py-3 font-medium">Ngành</th><th class="px-4 py-3 font-medium">GPA</th><th class="px-4 py-3 font-medium">Trạng thái</th><th class="px-4 py-3 font-medium text-right">Thao tác</th></tr></thead>
+     <tbody class="divide-y divide-slate-100">
+      <template x-for="s in rows" :key="s.id">
+       <tr class="hover:bg-indigo-50/40 transition">
+        <td class="px-4 py-3"><div class="flex items-center gap-3"><span class="w-9 h-9 rounded-full grid place-items-center text-xs font-bold" :class="col(s)" x-text="ini(s.name)"></span><span class="font-semibold" x-text="s.name"></span></div></td>
+        <td class="px-4 py-3 text-slate-600" x-text="s.id"></td>
+        <td class="px-4 py-3 text-slate-600" x-text="s.email"></td>
+        <td class="px-4 py-3 text-slate-600" x-text="s.major"></td>
+        <td class="px-4 py-3 font-semibold" x-text="s.gpa.toFixed(2)"></td>
+        <td class="px-4 py-3"><span class="px-2.5 py-1 rounded-full text-xs font-medium ring-1 ring-inset" :class="badge(s.status)" x-text="vn(s.status)"></span></td>
+        <td class="px-4 py-3"><div class="flex justify-end gap-1">
+         <button class="p-2 rounded-lg text-slate-500 hover:bg-indigo-50 hover:text-[#4F46E5]" title="Xem" @click="view=s" x-html="ic('eye','w-4 h-4')"></button>
+         <button class="p-2 rounded-lg text-slate-500 hover:bg-indigo-50 hover:text-[#4F46E5]" title="Sửa" @click="openEdit(s)" x-html="ic('pen','w-4 h-4')"></button>
+         <button class="p-2 rounded-lg text-slate-500 hover:bg-rose-50 hover:text-[#F43F5E]" title="Xóa" @click="del=s" x-html="ic('trash','w-4 h-4')"></button>
+        </div></td>
+       </tr>
+      </template>
+     </tbody>
+    </table>
+    <div x-show="!rows.length" class="py-14 text-center text-slate-500">Không có sinh viên phù hợp. Hãy đổi bộ lọc hoặc thêm sinh viên mới.</div>
+   </div>
+   <div class="p-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 text-sm">
+    <span class="text-slate-500">Trang <b x-text="pg"></b> / <b x-text="pages"></b></span>
+    <div class="flex gap-1">
+     <button class="btn border border-slate-200 hover:bg-slate-50 disabled:opacity-40" :disabled="pg==1" @click="pg--">Trước</button>
+     <template x-for="p in pages" :key="p"><button class="w-9 rounded-xl font-medium" :class="p==pg?'bg-[#4F46E5] text-white':'hover:bg-slate-100'" @click="pg=p" x-text="p"></button></template>
+     <button class="btn border border-slate-200 hover:bg-slate-50 disabled:opacity-40" :disabled="pg==pages" @click="pg++">Sau</button>
+    </div>
+   </div>
+  </section>
+
+  <!-- Courses -->
+  <section x-show="page=='courses'" class="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
+   <template x-for="c in courses" :key="c[0]">
+    <div class="card p-5 hover:shadow-md transition">
+     <div class="flex justify-between items-start"><span class="px-2.5 py-1 rounded-lg bg-indigo-50 text-[#4F46E5] text-xs font-bold" x-text="c[0]"></span><span class="text-xs text-slate-500"><span x-text="c[3]"></span> sinh viên</span></div>
+     <div class="font-semibold text-lg mt-3" x-text="c[1]"></div>
+     <div class="text-sm text-slate-500" x-text="c[2]"></div>
+     <div class="flex justify-between text-xs mt-4 mb-1 text-slate-500"><span>Tiến độ môn học</span><span class="font-semibold text-slate-700" x-text="c[4]+'%'"></span></div>
+     <div class="h-2 bg-slate-100 rounded-full"><div class="h-2 rounded-full" :class="c[4]>=70?'bg-[#10B981]':'bg-[#4F46E5]'" :style="'width:'+c[4]+'%'"></div></div>
+    </div>
+   </template>
+  </section>
+
+  <!-- Attendance & grades -->
+  <section x-show="page=='attendance'" class="card">
+   <div class="p-4 border-b border-slate-100 flex flex-wrap justify-between gap-3 items-center">
+    <div><div class="font-semibold">CS101 · Lập trình căn bản</div><div class="text-sm text-slate-500">Nhấn vào trạng thái để đổi: có mặt, đi muộn, vắng</div></div>
+    <button class="btn bg-[#10B981] text-white hover:bg-emerald-600" @click="toast('Đã lưu điểm danh và điểm số')">Lưu thay đổi</button>
+   </div>
+   <div class="overflow-x-auto"><table class="w-full text-sm min-w-[560px]">
+    <thead class="bg-slate-50 text-slate-500 text-left"><tr><th class="px-4 py-3 font-medium">Sinh viên</th><th class="px-4 py-3 font-medium">Điểm danh hôm nay</th><th class="px-4 py-3 font-medium">Điểm giữa kỳ (0–100)</th></tr></thead>
+    <tbody class="divide-y divide-slate-100">
+     <template x-for="s in attRows" :key="s.id"><tr class="hover:bg-indigo-50/40 transition">
+      <td class="px-4 py-3 font-semibold" x-text="s.name"></td>
+      <td class="px-4 py-3"><button class="px-3 py-1 rounded-full text-xs font-semibold" :class="attL(s.att)[1]" @click="cyc(s)" x-text="attL(s.att)[0]"></button></td>
+      <td class="px-4 py-3"><input type="number" min="0" max="100" class="inp w-24" x-model.number="s.score"></td>
+     </tr></template>
+    </tbody></table></div>
+  </section>
+
+  <!-- Reports -->
+  <section x-show="page=='reports'" class="grid lg:grid-cols-2 gap-4">
+   <div class="card p-5"><div class="font-semibold mb-4">Phân bố học lực</div>
+    <div class="space-y-4"><template x-for="b in bands" :key="b[0]"><div>
+     <div class="flex justify-between text-sm mb-1"><span x-text="b[0]"></span><span class="font-semibold" x-text="b[1]+' SV'"></span></div>
+     <div class="h-3 bg-slate-100 rounded-full"><div class="h-3 bg-[#4F46E5] rounded-full transition-all" :style="'width:'+b[1]/students.length*100+'%'"></div></div></div></template></div></div>
+   <div class="card p-5"><div class="font-semibold mb-4">Trạng thái sinh viên</div>
+    <div class="grid grid-cols-3 gap-3 text-center">
+     <template x-for="s in ['Active','Inactive','Graduated']"><div class="rounded-xl p-4" :class="badge(s)"><div class="text-3xl font-bold" x-text="students.filter(x=>x.status==s).length"></div><div class="text-xs mt-1" x-text="vn(s)"></div></div></template>
+    </div>
+    <button class="btn border border-slate-200 hover:bg-slate-50 mt-6" @click="toast('Đang chuẩn bị báo cáo, vui lòng chờ')">Xuất báo cáo</button></div>
+  </section>
+
+  <!-- Settings -->
+  <section x-show="page=='settings'" class="card p-5 max-w-2xl space-y-5">
+   <div><label class="text-sm font-medium">Tên trường</label><input class="inp mt-1" x-model="settings.school"></div>
+   <template x-for="o in [['email','Gửi email thông báo điểm cho sinh viên'],['auto','Tự động khóa điểm sau 7 ngày'],['dark','Giao diện tối (sắp có)']]" :key="o[0]">
+    <div class="flex items-center justify-between"><span class="text-sm" x-text="o[1]"></span>
+     <button class="w-11 h-6 rounded-full p-0.5 transition" :class="settings[o[0]]?'bg-[#4F46E5]':'bg-slate-300'" @click="settings[o[0]]=!settings[o[0]]" role="switch" :aria-checked="settings[o[0]]"><span class="block w-5 h-5 bg-white rounded-full shadow transition" :class="settings[o[0]]?'translate-x-5':''"></span></button></div>
+   </template>
+   <button class="btn bg-[#4F46E5] text-white hover:bg-indigo-700" @click="toast('Đã lưu cài đặt')">Lưu cài đặt</button>
+  </section>
+ </main>
+</div>
+
+<!-- Add/Edit modal -->
+<div x-show="modal" x-transition.opacity class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm grid place-items-center p-4" @keydown.escape.window="modal=false;view=null;del=null">
+ <div class="card w-full max-w-lg max-h-[92vh] overflow-y-auto p-6" @click.outside="modal=false" x-transition>
+  <div class="flex justify-between items-center mb-5"><h2 class="text-lg font-bold" x-text="edit?'Sửa thông tin sinh viên':'Thêm sinh viên mới'"></h2><button class="p-1.5 rounded-lg hover:bg-slate-100" @click="modal=false" aria-label="Đóng" x-html="ic('x')"></button></div>
+  <div class="grid sm:grid-cols-2 gap-4">
+   <div><label class="text-sm font-medium">Mã sinh viên</label><input class="inp mt-1" :class="err.id&&'bad'" x-model="form.id"><p class="text-xs text-[#F43F5E] mt-1" x-text="err.id"></p></div>
+   <div><label class="text-sm font-medium">GPA</label><input class="inp mt-1" :class="err.gpa&&'bad'" x-model="form.gpa" placeholder="3.25"><p class="text-xs text-[#F43F5E] mt-1" x-text="err.gpa"></p></div>
+   <div class="sm:col-span-2"><label class="text-sm font-medium">Họ và tên</label><input class="inp mt-1" :class="err.name&&'bad'" x-model="form.name"><p class="text-xs text-[#F43F5E] mt-1" x-text="err.name"></p></div>
+   <div class="sm:col-span-2"><label class="text-sm font-medium">Email</label><input class="inp mt-1" :class="err.email&&'bad'" x-model="form.email"><p class="text-xs text-[#F43F5E] mt-1" x-text="err.email"></p></div>
+   <div><label class="text-sm font-medium">Ngành học</label><select class="inp mt-1" x-model="form.major"><template x-for="m in majors"><option :value="m" x-text="m"></option></template></select></div>
+   <div><label class="text-sm font-medium">Trạng thái</label><select class="inp mt-1" x-model="form.status"><option value="Active">Đang học</option><option value="Inactive">Tạm nghỉ</option><option value="Graduated">Đã tốt nghiệp</option></select></div>
+  </div>
+  <div class="flex justify-end gap-2 mt-6"><button class="btn border border-slate-200 hover:bg-slate-50" @click="modal=false">Hủy</button><button class="btn bg-[#4F46E5] text-white hover:bg-indigo-700" @click="save()" x-text="edit?'Lưu thay đổi':'Thêm sinh viên'"></button></div>
+ </div>
+</div>
+
+<!-- View modal -->
+<div x-show="view" x-transition.opacity class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm grid place-items-center p-4">
+ <div class="card w-full max-w-sm p-6 text-center" @click.outside="view=null" x-transition>
+  <template x-if="view"><div>
+   <span class="w-16 h-16 rounded-full grid place-items-center text-xl font-bold mx-auto" :class="col(view)" x-text="ini(view.name)"></span>
+   <div class="font-bold text-lg mt-3" x-text="view.name"></div><div class="text-sm text-slate-500" x-text="view.id+' · '+view.email"></div>
+   <div class="grid grid-cols-2 gap-3 mt-5 text-sm"><div class="rounded-xl bg-slate-50 p-3"><div class="text-slate-500">GPA</div><div class="font-bold text-lg" x-text="view.gpa.toFixed(2)"></div></div><div class="rounded-xl p-3" :class="badge(view.status)"><div>Trạng thái</div><div class="font-bold" x-text="vn(view.status)"></div></div></div>
+   <div class="text-sm text-slate-600 mt-3" x-text="view.major"></div>
+   <button class="btn border border-slate-200 hover:bg-slate-50 mt-5" @click="view=null">Đóng</button>
+  </div></template>
+ </div>
+</div>
+
+<!-- Delete modal -->
+<div x-show="del" x-transition.opacity class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm grid place-items-center p-4">
+ <div class="card w-full max-w-sm p-6" @click.outside="del=null" x-transition>
+  <div class="w-12 h-12 rounded-full bg-rose-50 text-[#F43F5E] grid place-items-center" x-html="ic('trash')"></div>
+  <h2 class="text-lg font-bold mt-4">Xóa sinh viên này?</h2>
+  <p class="text-sm text-slate-500 mt-1">Hồ sơ của <b x-text="del&&del.name"></b> sẽ bị xóa khỏi danh sách. Bạn không thể hoàn tác thao tác này.</p>
+  <div class="flex justify-end gap-2 mt-6"><button class="btn border border-slate-200 hover:bg-slate-50" @click="del=null">Hủy</button><button class="btn bg-[#F43F5E] text-white hover:bg-rose-600" @click="remove()">Xóa sinh viên</button></div>
+ </div>
+</div>
+
+<!-- Toasts -->
+<div class="fixed bottom-4 right-4 z-[60] space-y-2" style="bottom:calc(1rem + env(safe-area-inset-bottom,0px))">
+ <template x-for="t in toasts" :key="t.id">
+  <div x-transition class="card flex items-center gap-3 pl-3 pr-4 py-3 text-sm font-medium shadow-lg">
+   <span class="w-7 h-7 rounded-full grid place-items-center text-white" :class="t.t=='del'?'bg-[#F43F5E]':'bg-[#10B981]'" x-html="ic(t.t=='del'?'trash':'check','w-4 h-4')"></span><span x-text="t.m"></span>
+  </div>
+ </template>
+</div>
+</body>
+</html>
